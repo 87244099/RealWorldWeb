@@ -50,3 +50,13 @@ type UserAuthorizationBody struct {
 	Bio      string      `json:"bio"`
 	Image    interface{} `json:"image"`
 }
+
+type UserProfileResponse struct {
+	UserProfile UserProfile `json:"userProfile"`
+}
+type UserProfile struct {
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	Image     string `json:"image"`
+	Following bool   `json:"following"`
+}

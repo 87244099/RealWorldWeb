@@ -21,6 +21,29 @@ func AddUserHandler(r *gin.Engine) {
 
 	userGroup.POST("", userRegistration)
 	userGroup.POST("/login", userLogin)
+
+	r.GET("/api/profiles/:username", userProfile)
+}
+
+func userProfile(ctx *gin.Context) {
+	log := logger.New(ctx)
+	username := ctx.Param("username")
+	log = log.WithField("username", username) //TODO: what is it?
+	log.Infof("user profile called, username: %s", username)
+
+	user, err := storage.GetUserByUsername(ctx, username)
+	if err != nil {
+		log.Infoln("GetUserByUsername failed:", err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+	}
+	ctx.JSON(http.StatusOK, response.UserProfileResponse{
+		UserProfile: response.UserProfile{
+			Username:  user.Username,
+			Bio:       user.Bio,
+			Image:     user.Image,
+			Following: false,
+		},
+	})
 }
 
 func userRegistration(ctx *gin.Context) {
