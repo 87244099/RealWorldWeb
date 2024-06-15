@@ -46,6 +46,10 @@ func userRegistration(ctx *gin.Context) {
 		return
 	}
 
+	//todo: check if user not exist in db
+	//todo: insert new user into db
+	//todo: get new user from db
+
 	ctx.JSON(http.StatusOK, response.UserRegistrationResponse{
 		User: response.UserRegistrationBody{
 			Email:    body.User.Email,
@@ -67,5 +71,25 @@ func userLogin(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
+	//todo check if user registered?
+	// get user from db
+	username := "Jacob"
+	token, err := security.GenerateJWTByHS256(username, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorln("generate jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, response.UserAuthorizationResponse{
+		User: response.UserAuthorizationBody{
+			Email:    body.User.Email,
+			Token:    token,
+			Username: username,
+			Bio:      "",
+			Image:    nil,
+		},
+	})
+
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 }
