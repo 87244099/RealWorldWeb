@@ -83,16 +83,30 @@ func GenerateJWTByHS256(username, email string) (string, error) {
 	return t.SignedString(key)
 }
 
-func VerifyJwt(token string) (bool, error) {
+func VerifyJwtRS256(token string) (*jwt.MapClaims, bool, error) {
 	var claim jwt.MapClaims
 	claims, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
 		return publicKey, nil
 	})
 	if err != nil {
-		return false, err
+		return nil, false, err
 	}
 	if claims.Valid {
-		return true, nil
+		return &claim, true, nil
 	}
-	return false, nil
+	return nil, false, nil
+}
+
+func VerifyJwtHS256(token string) (*jwt.MapClaims, bool, error) {
+	var claim jwt.MapClaims
+	claims, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.GetSecret()), nil
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	if claims.Valid {
+		return &claim, true, nil
+	}
+	return nil, false, nil
 }
