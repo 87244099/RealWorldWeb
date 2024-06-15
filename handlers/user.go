@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"RealWorldWeb/logger"
 	"RealWorldWeb/params/request"
 	"RealWorldWeb/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -19,6 +19,8 @@ func AddUserHandler(r *gin.Engine) {
 }
 
 func userRegistration(ctx *gin.Context) {
+	log := logger.New(ctx) // create log by ctx
+
 	var body request.UserRegistrationBody
 	/*
 		其他的创建方式：
@@ -28,20 +30,22 @@ func userRegistration(ctx *gin.Context) {
 
 	err := ctx.ShouldBind(&body) //write data into body
 	if err != nil {
+		log.WithError(err).Errorln("build json failed") //output log with error object
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println("userRegistration-body", utils.JsonMarshal(body))
-
+	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called") //output log with custom info
 }
 
 func userLogin(ctx *gin.Context) {
+	log := logger.New(ctx)
 	var body = request.UserAuthorizationRequest{}
 	err := ctx.ShouldBind(&body)
 	if err != nil {
+		log.WithError(err).Errorln("build json failed")
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	fmt.Println("userLogin-body", utils.JsonMarshal(body))
+	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 }
