@@ -3,6 +3,8 @@ package handlers
 import (
 	"RealWorldWeb/logger"
 	"RealWorldWeb/params/request"
+	"RealWorldWeb/params/response"
+	"RealWorldWeb/security"
 	"RealWorldWeb/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -36,6 +38,24 @@ func userRegistration(ctx *gin.Context) {
 	}
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called") //output log with custom info
+
+	token, err := security.GenerateJWTByHS256(body.User.Username, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorln("generate jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.UserRegistrationResponse{
+		User: response.UserRegistrationBody{
+			Email:    body.User.Email,
+			Token:    token,
+			Username: body.User.Username,
+			Bio:      "",
+			Image:    nil,
+		},
+	})
+	return
 }
 
 func userLogin(ctx *gin.Context) {
