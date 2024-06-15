@@ -42,9 +42,16 @@ func userRegistration(ctx *gin.Context) {
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called") //output log with custom info
 
+	hashPassword, err := security.HashPassword(body.User.Password)
+	if err != nil {
+		log.WithError(err).Errorln("HashPassword password failed") //output log with error object
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	err = storage.CreateUser(ctx, &models.User{
 		Username: body.User.Username,
-		Password: body.User.Password,
+		Password: hashPassword,
 		Email:    body.User.Email,
 		Image:    config.GetDefaultPortrait(),
 		Bio:      "",
@@ -97,7 +104,7 @@ func userLogin(ctx *gin.Context) {
 		return
 	}
 
-	if dbUser.Password != body.User.Password {
+	if !security.CheckPassword(body.User.Password, dbUser.Password) {
 		log.WithError(err).Errorf("password error origin=%v, received=%v", dbUser.Password, body.User.Password)
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return

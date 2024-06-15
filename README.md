@@ -137,3 +137,53 @@ go: `go get -u github.com/go-sql-driver/mysql`
 
 
 
+## 密码
+
+docs: https://dropbox.tech/security/how-dropbox-securely-stores-your-passwords
+
+### 原理
+- 散列hash
+- 加盐
+- 验证
+
+### 流程
+
+- 注册流程
+  - 客户端发送明文
+  - 服务端对密码进行加盐
+  - 然后进行加密
+  - 将加密文本入库
+- 登录流程
+  - 客户端发送明文
+  - 服务端对密码进行加盐
+  - 然后db密码和加盐后的客户端密码做对比
+
+### usages
+- generate
+```go
+func HashPassword(password string) (string, error) {
+	password += salt
+	//deal with password
+	bcryptPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10) //加盐的强度
+	if err != nil {
+		return "", err
+	}
+
+	//TODO 为什么存储的时候最好密码base64一次？
+	return base64.StdEncoding.EncodeToString([]byte(bcryptPassword)), nil
+}
+```
+- compare
+```go
+func CheckPassword(plain, hash string) bool {
+	plain += salt
+	bcryptedPassword, err := base64.StdEncoding.DecodeString(hash)
+	if err != nil {
+		return false
+	}
+	err = bcrypt.CompareHashAndPassword(bcryptedPassword, []byte(plain))
+	return err == nil
+}
+
+```
+
