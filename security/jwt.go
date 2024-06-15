@@ -1,13 +1,14 @@
 package security
 
 import (
+	"RealWorldWeb/config"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
 
 func GenerateJWT(username, email string) (string, error) {
 	//usages from https://golang-jwt.github.io/jwt/usage/create/
-	key := []byte("secret")
+	key := []byte(config.GetSecret())
 	tokenDuration := 24 * time.Hour
 	now := time.Now()
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256,
