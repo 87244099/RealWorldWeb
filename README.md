@@ -187,3 +187,11 @@ func CheckPassword(plain, hash string) bool {
 
 ```
 
+## 中间件
+```go
+instance.User(func(ctx){
+	ctx.Next()
+}).PUT("/XXXX", func(ctx){
+	
+})
+```

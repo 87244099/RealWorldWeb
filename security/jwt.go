@@ -3,6 +3,7 @@ package security
 import (
 	"RealWorldWeb/config"
 	"crypto/rsa"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"os"
 	"time"
@@ -109,4 +110,15 @@ func VerifyJwtHS256(token string) (*jwt.MapClaims, bool, error) {
 		return &claim, true, nil
 	}
 	return nil, false, nil
+}
+
+func GetCurrentUsername(ctx *gin.Context) string {
+	mapClaims := ctx.MustGet("user").(*jwt.MapClaims)
+	username := (*mapClaims)["user"].(map[string]interface{})["username"].(string)
+	return username
+}
+func GetCurrentEmail(ctx *gin.Context) string {
+	mapClaims := ctx.MustGet("user").(*jwt.MapClaims)
+	email := (*mapClaims)["user"].(map[string]interface{})["email"].(string)
+	return email
 }

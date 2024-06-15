@@ -42,3 +42,28 @@ type UserAuthorizationBody struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+/*
+*
+
+	{
+	  "user": {
+		"email": "jake@jake.jake",
+		"token": "jwt.token.here",
+		"username": "jake",
+		"bio": "I work at statefarm",
+		"image": null
+	  }
+	}
+*/
+type EditUserRequest struct {
+	EditUserBody EditUserBody `json:"user"`
+}
+
+type EditUserBody struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Bio      string `json:"bio"`
+	Image    string `json:"image"`
+	Password string `json:"password"`
+}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"RealWorldWeb/config"
 	"RealWorldWeb/logger"
+	"RealWorldWeb/middlewares"
 	"RealWorldWeb/models"
 	"RealWorldWeb/params/request"
 	"RealWorldWeb/params/response"
@@ -23,6 +24,8 @@ func AddUserHandler(r *gin.Engine) {
 	userGroup.POST("/login", userLogin)
 
 	r.GET("/api/profiles/:username", userProfile)
+
+	r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 }
 
 func userProfile(ctx *gin.Context) {
@@ -154,4 +157,60 @@ func userLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &resUser)
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
+}
+
+func editUser(ctx *gin.Context) {
+	log := logger.New(ctx)
+	log.Infof("User: %v", utils.JsonMarshal(ctx.MustGet("user")))
+	var body = request.EditUserRequest{}
+	err := ctx.ShouldBind(&body)
+	if err != nil {
+		log.WithError(err).Errorln("build json failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	if body.EditUserBody.Username == "" || body.EditUserBody.Email == "" {
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	if body.EditUserBody.Password != "" {
+		var err error
+		body.EditUserBody.Password, err = security.HashPassword(body.EditUserBody.Password)
+		if err != nil {
+			log.WithError(err).Errorln("HashPassword password failed")
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+		}
+	}
+	username := security.GetCurrentUsername(ctx)
+
+	dbUser := &models.User{
+		Username: body.EditUserBody.Username,
+		Password: body.EditUserBody.Password,
+		Email:    body.EditUserBody.Email,
+		Image:    body.EditUserBody.Image,
+		Bio:      body.EditUserBody.Bio,
+	}
+	err = storage.UpdateUserByUsername(ctx, username, dbUser)
+	if err != nil {
+		log.WithError(err).Errorf("UpdateUserByUsername failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	token, err := security.GenerateJWTByHS256(body.EditUserBody.Username, dbUser.Email)
+	if err != nil {
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.UserAuthorizationResponse{
+		User: response.UserAuthorizationBody{
+			Email:    body.EditUserBody.Email,
+			Token:    token,
+			Username: dbUser.Username,
+			Bio:      dbUser.Bio,
+			Image:    dbUser.Image,
+		},
+	})
 }
