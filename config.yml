@@ -1,1 +1,3 @@
 secret: secret000
+PrivateKeyLocation: D:/software/GoDemo/RealWorldWeb/private.pem
+PublicKeyLocation: D:/software/GoDemo/RealWorldWeb/public.pem

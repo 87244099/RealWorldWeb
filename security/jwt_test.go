@@ -4,8 +4,15 @@ import (
 	"testing"
 )
 
-func TestGenerateJWT(t *testing.T) {
-	token, err := GenerateJWT("jack", "jack@email.com")
+func TestGenerateJWTByHS256(t *testing.T) {
+	token, err := GenerateJWTByHS256("jack", "jack@email.com")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf(token)
+}
+func TestGenerateJWTByRS256(t *testing.T) {
+	token, err := GenerateJWTByRS256("jack", "jack@email.com")
 	if err != nil {
 		t.Error(err)
 	}

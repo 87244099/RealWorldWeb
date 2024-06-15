@@ -16,9 +16,18 @@
 
 ## token生成
 
-### jwt
+### 对称加密
+
+#### jwt
 - docs: https://github.com/golang-jwt/jwt
 - install: `go get -u github.com/golang-jwt/jwt/v5`
+
+### 非堆成加密
+
+- 电脑看是否有`openssl`
+- 生成私钥:`openssl genrsa -out private.pem 2048`，当前路径下会出现一个`private.pem`的文件
+- 由私钥生成公钥：`openssl rsa -in private.pem --outform PEM -pubout -out public.pem`，目录下会出现`public.pem`
+- 
 
 ## 配置文件
 - background: 
@@ -42,3 +51,5 @@
 
   - read config: `viper.Get("secret")`
   - read struct: `viper.Unmarshal(&_config)`
+
+

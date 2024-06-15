@@ -7,7 +7,9 @@ import (
 
 // 把配置文件转成结构体
 type config struct {
-	Secret string `json:"secret"`
+	Secret             string
+	PublicKeyLocation  string
+	PrivateKeyLocation string
 }
 
 var _config config
@@ -35,4 +37,12 @@ func init() {
 
 func GetSecret() string {
 	return _config.Secret
+}
+
+func GetPublicKeyLocation() string {
+	return _config.PublicKeyLocation
+}
+
+func GetPrivateKeyLocation() string {
+	return _config.PrivateKeyLocation
 }
