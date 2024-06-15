@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"RealWorldWeb/config"
 	"RealWorldWeb/logger"
+	"RealWorldWeb/models"
 	"RealWorldWeb/params/request"
 	"RealWorldWeb/params/response"
 	"RealWorldWeb/security"
+	"RealWorldWeb/storage"
 	"RealWorldWeb/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -39,6 +42,23 @@ func userRegistration(ctx *gin.Context) {
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called") //output log with custom info
 
+	err = storage.CreateUser(ctx, &models.User{
+		Username: body.User.Username,
+		Password: body.User.Password,
+		Email:    body.User.Email,
+		Image:    config.GetDefaultPortrait(),
+		Bio:      "",
+	})
+	if err != nil {
+		log.WithError(err).Errorf("create user failed")
+		//ctx.AbortWithStatusJSON(http.StatusInternalServerError, map[string]interface{
+		//	"code": 0,
+		//	"msg": ""
+		//})
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	token, err := security.GenerateJWTByHS256(body.User.Username, body.User.Email)
 	if err != nil {
 		log.WithError(err).Errorln("generate jwt failed")
@@ -46,7 +66,6 @@ func userRegistration(ctx *gin.Context) {
 		return
 	}
 
-	//todo: check if user not exist in db
 	//todo: insert new user into db
 	//todo: get new user from db
 
@@ -71,25 +90,38 @@ func userLogin(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+	dbUser, err := storage.GetUserByEmail(ctx, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorf("get user failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
-	//todo check if user registered?
-	// get user from db
-	username := "Jacob"
+	if dbUser.Password != body.User.Password {
+		log.WithError(err).Errorf("password error origin=%v, received=%v", dbUser.Password, body.User.Password)
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	username := dbUser.Username
 	token, err := security.GenerateJWTByHS256(username, body.User.Email)
 	if err != nil {
 		log.WithError(err).Errorln("generate jwt failed")
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	ctx.JSON(http.StatusOK, response.UserAuthorizationResponse{
+
+	resUser := response.UserAuthorizationResponse{
 		User: response.UserAuthorizationBody{
 			Email:    body.User.Email,
 			Token:    token,
 			Username: username,
-			Bio:      "",
-			Image:    nil,
+			Bio:      dbUser.Bio,
+			Image:    dbUser.Image,
 		},
-	})
+	}
+	log.WithField("resUser", utils.JsonMarshal(resUser))
+	ctx.JSON(http.StatusOK, &resUser)
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 }

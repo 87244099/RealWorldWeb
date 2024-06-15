@@ -1,3 +1,15 @@
+## 环境准备
+- 变量设置：`export GOPATH="/c/Users/faisco/go"`
+- 安装模块：`go install github.com/gin-gonic/gin@latest`
+- 镜像设置：`export GOPROXY=https://goproxy.cn`
+
+## 项目初始化流程
+
+- mkdir goquick_start
+- cd goquick_start
+- go mod init example.com/goquick_start 这里会出现go.sum的文件
+- go get -u github.com/gin-gonic/gin
+- 剩余参考：https://gin-gonic.com/docs/quickstart/
 
 ## 日志
 - logrus: 最常用的日志库
@@ -76,5 +88,52 @@ func VerifyJwt(token string) (bool, error) {
 
   - read config: `viper.Get("secret")`
   - read struct: `viper.Unmarshal(&_config)`
+
+
+## 数据库
+
+这里使用docker去安装mysql
+
+- install
+  - 安装docker
+  - docker hub找到mysql进行安装: `docker pull msyql`
+  - run serve `docker run --name realworld_mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 -d mysql --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci`
+  - check server: `docker ps`
+  - 如果服务没有运行，可以查看对应实例的日志：`docker logs c0690cc9ff66
+  - stop serve: `docker stop realworld_mysql`
+  - rm instance: `docker rm realworld_mysql`
+- connect
+  - goland右侧有个database照着ip，port等配置下即可
+  - 最后点击下[Test Connection]测试能否连通即可
+- table design
+  - database
+    ```sql
+        create database realworld;
+    ```    
+  - tables
+    - users
+      ```sql
+      create table user (
+      username varchar(64) not null primary key,
+      password varchar(512) not null default '',
+      email varchar(256) not null default '' unique,
+      image varchar(1024) not null default ''
+      bio varchar(1024) not null default ''
+      ) engine=InnoDB default charset=utf8mb4
+      ```
+    - 
+      `
+### go操作数据库
+
+#### sqlx
+
+docs: https://github.com/jmoiron/sqlx
+go: `go get github.com/jmoiron/sqlx`
+
+#### go-sql-driver
+
+docs: https://github.com/go-sql-driver/mysql
+go: `go get -u github.com/go-sql-driver/mysql`
+
 
 

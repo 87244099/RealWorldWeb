@@ -10,6 +10,7 @@ type config struct {
 	Secret             string
 	PublicKeyLocation  string
 	PrivateKeyLocation string
+	DefaultPortrait    string
 }
 
 var _config config
@@ -45,4 +46,8 @@ func GetPublicKeyLocation() string {
 
 func GetPrivateKeyLocation() string {
 	return _config.PrivateKeyLocation
+}
+
+func GetDefaultPortrait() string {
+	return _config.DefaultPortrait
 }
