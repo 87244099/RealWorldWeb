@@ -19,4 +19,12 @@
 ### jwt
 - docs: https://github.com/golang-jwt/jwt
 - install: `go get -u github.com/golang-jwt/jwt/v5`
+
+## 配置文件
+- background: 
+  - 一些配置信息可能存放在go文件，配置文件或环境变量
+  - 如果要统一这些方式，需要第三方库解决
+
+### viper
+- docs: https://github.com/spf13/viper
 - 
