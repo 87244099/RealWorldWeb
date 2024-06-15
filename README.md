@@ -24,10 +24,35 @@
 
 ### 非堆成加密
 
+#### 生成密钥
 - 电脑看是否有`openssl`
 - 生成私钥:`openssl genrsa -out private.pem 2048`，当前路径下会出现一个`private.pem`的文件
 - 由私钥生成公钥：`openssl rsa -in private.pem --outform PEM -pubout -out public.pem`，目录下会出现`public.pem`
-- 
+#### 验证
+- usage
+```go
+func VerifyJwt(token string) (bool, error) {
+	var claim jwt.MapClaims
+	claims, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
+		return publicKey, nil
+	})
+	if err != nil {// 比如过期，内容被串改等都有提示
+		return false, err
+	}
+	if claims.Valid {//最终看这个值处理
+		return true, nil
+	}
+	return false, nil
+}
+```
+- error type: 
+  - 内容不对： `token signature is invalid: crypto/rsa: verification error`
+  - 过期了：`token has invalid claims: token is expired`
+- QA:
+  - Q: 为什么jwt中间那一段用base64？
+#### 生成token
+
+
 
 ## 配置文件
 - background: 
