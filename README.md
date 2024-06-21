@@ -2,6 +2,7 @@
 - 变量设置：`export GOPATH="/c/Users/faisco/go"`
 - 安装模块：`go install github.com/gin-gonic/gin@latest`
 - 镜像设置：`export GOPROXY=https://goproxy.cn`
+  - goland设置：file->setting->go modules-> environment variables
 
 ## 项目初始化流程
 
@@ -195,3 +196,125 @@ instance.User(func(ctx){
 	
 })
 ```
+
+## 退出登录
+
+把客户端的token给清理即可，res项目是清理localStorage里面的user
+
+## orm数据库
+
+docs: https://gorm.io/docs
+install: `go get -u gorm.io/gorm`
+initialize:
+    
+  - 声明变量
+
+    ```go 
+        var db *sqlx.DB //为什么这个会被引用？
+        var err error
+        var gormDB *gorm.DB
+    ```
+
+  - 链接数据库：
+
+    ```go
+       
+        db, err = sqlx.Open("mysql", "root:123456@(localhost:3306)/realworld")
+
+    ```
+    
+  - 绑定orm：
+
+    ```go
+      gormDB, err = gorm.Open(gorm_mysql.New(gorm_mysql.Config{
+          Conn: db,
+      }), &gorm.Config{})
+    ```
+
+声明model
+```go
+type Article struct {
+	Id             int64  `db:"id"` //依赖db的字段自增
+	AuthorUsername string `gorm:"column:author_username"`
+	Title          string
+	Slug           string
+	Body           string
+	Description    string
+	TagList        TagList `gorm:"type:string"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+```
+实现获取表名的接口：
+```go
+func (a Article) TableName() string {
+    return "article" //todo what is syntax sugar?
+}
+```
+
+对象字段处理，比如Tag
+- 声明TagList结构体
+```go
+type TagList []string //难道结合下面的scan可以实现面向对象语法？
+```
+- 实现结构体的Scan接口
+```go
+// Scan将数据库中存储的字节数据转TagList类型，判断能否转换成功
+func (j *TagList) Scan(value interface{}) error {
+	// 将value转换为[]byte类型
+	bytes, ok := value.([]byte)
+	if !ok {
+		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
+	}
+
+	// 创建一个json.RawMessage类型的变量
+	result := json.RawMessage{}
+
+	// 将字节解析为json.RawMessage类型的对象
+	err := json.Unmarshal(bytes, &result)
+	return err
+}
+```
+- 将TagList类型的数据，转成数据库可以存储的
+```go
+// Value return json value, implement driver.Valuer interface
+func (j TagList) Value() (driver.Value, error) {
+	if len(j) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(j)//讲对象转换成字节数据
+}
+```
+
+创建curd
+
+  ```go
+    func CreateArticle(ctx context.Context, article *models.Article) error {
+		return gormDB.WithContext(ctx).Create(article).Error
+    }
+  ```
+
+调用curl
+  ```
+	ctx := context.TODO()
+    err = CreateArticle(ctx, &models.Article{
+        AuthorUsername: article["author"].(map[string]interface{})["username"].(string), //这个拿到的是一个对象
+        Title:          article["title"].(string),
+        Slug:           article["slug"].(string),
+        Body:           article["body"].(string),
+        Description:    article["description"].(string),
+        TagList:        tagList, //数组要怎么转成json？
+        CreatedAt:      createdAt,
+        UpdatedAt:      updatedAt,
+    })
+    if err != nil {
+        t.Fatal(err)
+    }
+  ```
+
+## FQA
+
+- Q: varchar扩容出现3072的限制
+  - 字段改成前缀索引  
+
+- 
