@@ -17,6 +17,7 @@ func RunHttpServer() {
 	// 绑定端口和ip，运行实例
 
 	handlers.AddUserHandler(r)
+	handlers.AddArticleHandler(r)
 
 	r.Run("localhost:8000") // listen and serve on 0.0.0.0:8080
 }

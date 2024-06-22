@@ -2,6 +2,7 @@ package storage
 
 import (
 	"RealWorldWeb/models"
+	"RealWorldWeb/utils"
 	"context"
 	"encoding/json"
 	"testing"
@@ -4443,4 +4444,14 @@ func TestDataImport(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+}
+
+func TestListArticles(t *testing.T) {
+	ctx := context.TODO()
+	articles, err := ListArticles(ctx, 10, 0)
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+	t.Logf("articles: %v\n", utils.JsonMarshal(articles))
 }

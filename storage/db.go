@@ -12,7 +12,7 @@ var err error
 var gormDB *gorm.DB
 
 func init() {
-	db, err = sqlx.Open("mysql", "root:123456@(localhost:3306)/realworld")
+	db, err = sqlx.Open("mysql", "root:123456@(localhost:3306)/realworld?parseTime=true") //不加这个，时间解析有问题
 	if err != nil {
 		panic(err)
 	}
