@@ -131,7 +131,13 @@ func userLogin(ctx *gin.Context) {
 	}
 
 	if !security.CheckPassword(body.User.Password, dbUser.Password) {
-		log.WithError(err).Errorf("password error origin=%v, received=%v", dbUser.Password, body.User.Password)
+		encodedReceived, err := security.HashPassword(body.User.Password)
+		if err != nil {
+			log.WithError(err).Errorln("HashPassword failed")
+			ctx.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+		log.WithError(err).Errorf("password error origin=%v, received=%v, encodedReceived=%v", dbUser.Password, body.User.Password, encodedReceived)
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}

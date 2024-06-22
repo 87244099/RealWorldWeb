@@ -2,6 +2,7 @@ package storage
 
 import (
 	"RealWorldWeb/models"
+	"RealWorldWeb/params/request"
 	"RealWorldWeb/utils"
 	"context"
 	"encoding/json"
@@ -4448,7 +4449,11 @@ func TestDataImport(t *testing.T) {
 
 func TestListArticles(t *testing.T) {
 	ctx := context.TODO()
-	articles, err := ListArticles(ctx, 10, 0)
+	articles, err := ListArticles(ctx, request.ListArticleQuery{
+		Limit:  100,
+		Offset: 0,
+		Tag:    "sit",
+	})
 	if err != nil {
 		t.Fatal(err)
 		return

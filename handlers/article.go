@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"RealWorldWeb/logger"
+	"RealWorldWeb/params/request"
 	"RealWorldWeb/params/response"
 	"RealWorldWeb/storage"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/cast"
+	"net/http"
 )
 
 func AddArticleHandler(r *gin.Engine) {
@@ -15,14 +16,22 @@ func AddArticleHandler(r *gin.Engine) {
 
 func listArticles(ctx *gin.Context) {
 	log := logger.New(ctx)
-	limit := cast.ToInt(ctx.Query("limit")) //cast query string into int type
-	offset := cast.ToInt(ctx.Query("offset"))
-	log.Infof("limit:%d, offset:%d", limit, offset)
-	articles, err := storage.ListArticles(ctx, limit, offset)
+
+	//读取特定的queryString到req上
+	var req request.ListArticleQuery
+	err2 := ctx.BindQuery(&req)
+	if err2 != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err2)
+		return
+	}
+
+	log.Infof("limit:%d, offset:%d, tag=%s", req.Limit, req.Offset, req.Tag)
+
+	articles, err := storage.ListArticles(ctx, req)
 	if err != nil {
 		log.Error(err)
 	}
-	total, err := storage.CountArticles(ctx)
+	total, err := storage.CountArticles(ctx, req)
 
 	var res response.ListArticlesResponse
 	res.ArticlesCount = total
@@ -45,4 +54,5 @@ func listArticles(ctx *gin.Context) {
 			UpdatedAt:      article.UpdatedAt,
 		})
 	}
+	ctx.JSON(http.StatusOK, res)
 }
