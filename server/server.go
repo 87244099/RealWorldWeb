@@ -18,6 +18,7 @@ func RunHttpServer() {
 
 	handlers.AddUserHandler(r)
 	handlers.AddArticleHandler(r)
+	handlers.AddTagsHandler(r)
 
 	r.Run("localhost:8000") // listen and serve on 0.0.0.0:8080
 }
