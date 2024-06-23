@@ -15,7 +15,7 @@ import (
 )
 
 func AddArticleHandler(r *gin.Engine) {
-	articleGroup := r.Group("/api/article")
+	articleGroup := r.Group("/api/articles")
 	articleGroup.GET("", listArticles)
 	articleGroup.GET("/:slug", getArticle)
 

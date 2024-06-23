@@ -6,7 +6,7 @@ import (
 )
 
 type ListArticlesResponse struct {
-	ArticlesCount int64      `json:"articles_count"`
+	ArticlesCount int64      `json:"articlesCount"`
 	Articles      []*Article `json:"articles"`
 }
 

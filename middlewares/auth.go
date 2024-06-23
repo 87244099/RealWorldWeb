@@ -13,6 +13,10 @@ func AuthMiddleware(ctx *gin.Context) {
 	token := ctx.GetHeader("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ") //这里后面不能少掉空格
 	claims, ok, err := security.VerifyJwtHS256(token)
+
+	// 打印调用链信息
+	//log.Infof("middle url: %s", ctx.Request.URL.String())
+
 	if err != nil || !ok {
 		log.WithError(err).Infof("verify jwt failed")
 		ctx.AbortWithStatus(http.StatusForbidden)

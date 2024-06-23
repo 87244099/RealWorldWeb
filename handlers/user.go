@@ -18,14 +18,17 @@ import (
 
 // AddUserHandler r是http服务的实例
 func AddUserHandler(r *gin.Engine) {
-	userGroup := r.Group("/api/users")
+	usersGroup := r.Group("/api/users")
 
-	userGroup.POST("", userRegistration)
-	userGroup.POST("/login", userLogin)
+	usersGroup.POST("", userRegistration)
+	usersGroup.POST("/login", userLogin)
 
 	r.GET("/api/profiles/:username", userProfile)
 
-	r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
+	userGroup := r.Group("/api/user")
+	userGroup.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
+	userGroup.PUT("", userRegistration)
+	//r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 }
 
 func userProfile(ctx *gin.Context) {
