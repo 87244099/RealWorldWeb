@@ -47,3 +47,22 @@ func listArticleTx(ctx context.Context, req *request.ListArticleQuery) *gorm.DB 
 	}
 	return tx
 }
+
+func GetArticleBySlug(ctx context.Context, slug string) (*models.Article, error) {
+	var article models.Article
+	err := gormDB.WithContext(ctx).Model(models.Article{}).
+		Select("article.*, user.email as author_user_email, user.bio as author_user_bio, user.image as author_user_image").
+		Joins("LEFT JOIN user ON article.author_username = user.username").
+		Where("slug = ?", slug).
+		First(&article).Error
+	return &article, err
+}
+
+func UpdateArticle(ctx context.Context, slug string, article *models.Article) error {
+	return gormDB.WithContext(ctx).Where("slug=?", slug).Updates(article).Error
+}
+
+func DeleteArticle(ctx context.Context, slug string) error {
+	//why pass it ?
+	return gormDB.WithContext(ctx).Where("slug=?", slug).Delete(&models.Article{}).Error
+}

@@ -429,6 +429,10 @@ return
 }
 ```
 
+## uuid
+docs: https://github.com/google/uuid
+install: go get github.com/google/uuid
+
 ## FQA
 
 - Q: varchar扩容出现3072的限制
