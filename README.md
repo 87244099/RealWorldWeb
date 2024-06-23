@@ -453,6 +453,19 @@ ctx.Cookie("token")
 ctx.SetCookie("token", token, 24*3600, "/", "localhost:8080", false, true)
 ```
 
+## 文件上传
+### 读取
+```go
+file, err := ctx.FormFile("file")
+if err != nil {
+  log.WithError(err).Infof("get file failed")
+}
+```
+### 保存
+```go
+err = ctx.SaveUploadedFile(file, "./"+file.Filename)
+```
+
 ## FQA
 
 ### 数据库

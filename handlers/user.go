@@ -22,6 +22,7 @@ func AddUserHandler(r *gin.Engine) {
 
 	usersGroup.POST("", userRegistration)
 	usersGroup.POST("/login", userLogin)
+	usersGroup.POST("/user-image", uploadUserImage)
 
 	r.GET("/api/profiles/:username", userProfile)
 
@@ -29,6 +30,22 @@ func AddUserHandler(r *gin.Engine) {
 	userGroup.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 	userGroup.PUT("", userRegistration)
 	//r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
+}
+
+func uploadUserImage(ctx *gin.Context) {
+	log := logger.New(ctx)
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		log.WithError(err).Infof("get file failed")
+	}
+	err = ctx.SaveUploadedFile(file, "./"+file.Filename)
+	if err != nil {
+		log.WithError(err).Infof("save file failed")
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusOK)
+
 }
 
 func userProfile(ctx *gin.Context) {
