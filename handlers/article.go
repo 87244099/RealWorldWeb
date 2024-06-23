@@ -23,6 +23,7 @@ func AddArticleHandler(r *gin.Engine) {
 	articleGroup.POST("", createArticle)
 	articleGroup.PUT("/:slug", editArticle)
 	articleGroup.DELETE("/:slug", deleteArticle)
+
 }
 
 func listArticles(ctx *gin.Context) {

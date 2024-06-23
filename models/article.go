@@ -54,9 +54,7 @@ func (j *TagList) Scan(value interface{}) error {
 		return errors.New(fmt.Sprint("Failed to unmarshal JSONB value:", value))
 	}
 
-	result := json.RawMessage{}
-
-	err := json.Unmarshal(bytes, &result) //将字符串转成对象
+	err := json.Unmarshal(bytes, j)
 	return err
 }
 

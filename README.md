@@ -272,6 +272,15 @@ return "article" //todo what is syntax sugar?
 }
 ```
 
+### 开启调试模式，查看完整sql
+```go 
+gormDB = gormDB.Debug()
+```
+然后终端段就会出现：
+```shell
+[107.243ms] [rows:1] DELETE FROM `article_comment` WHERE `article_comment`.`id` = 1
+```
+
 ### 对象字段处理，比如Tag
 
 - 声明TagList结构体
@@ -435,7 +444,17 @@ install: go get github.com/google/uuid
 
 ## FQA
 
+### 数据库
 - Q: varchar扩容出现3072的限制
-    - 字段改成前缀索引
+    - 字段改成前缀索引：一般是字段设置了unique导致的
 
+- Q: 连表查询出现：Error 1267 (HY000): Illegal mix of collations (utf8mb4_0900_ai_ci,IMPLICIT) and (utf8mb4_general_ci,IMPLICIT) for operation '='
+  - 先确定你要用什么字符集，基于这个标准去查
+  - 问题原因一般是：库，表，列的字符集三者没有保持一致导致的
+  - 导出数据库的初始化sql：mysqldump -u your_username -p your_database_name your_table_name > output_file.sql
+    - 如果你是docker里面执行，按如下操作
+      - 查看运行的镜像：docker ps
+      - 把对应的文件复制出来：docker cp <container_name_or_id>:<container_path> <host_path>
+  - 查看output_file.sql里面，库，表和列的字符集是否存在不一致的情况下，全部改成一样即可
+  - 
 - 
