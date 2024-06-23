@@ -25,5 +25,8 @@ func RunHttpServer() {
 	handlers.AddTagsHandler(r)
 	handlers.AddArticleCommentHandler(r)
 
+	//r.Use(middlewares.AuthMiddleware).Static("/images", "./images") 可以加上权限校验
+	r.Static("/images", "./images") //浏览器访问http://localhost:8000/images/a.png就饿可以拿到这个目录下的同名文件，放其他类型的文件也可
+
 	r.Run(":8000") // listen and serve on 0.0.0.0:8080
 }
