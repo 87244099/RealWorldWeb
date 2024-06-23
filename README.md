@@ -442,6 +442,17 @@ return
 docs: https://github.com/google/uuid
 install: go get github.com/google/uuid
 
+## cookie
+
+### 读取
+```go 
+ctx.Cookie("token")
+```
+### 写入
+```go
+ctx.SetCookie("token", token, 24*3600, "/", "localhost:8080", false, true)
+```
+
 ## FQA
 
 ### 数据库

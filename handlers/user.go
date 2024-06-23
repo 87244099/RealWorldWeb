@@ -153,6 +153,8 @@ func userLogin(ctx *gin.Context) {
 		return
 	}
 
+	ctx.SetCookie("token", token, 24*3600, "/", "localhost:8000", false, true)
+
 	resUser := response.UserAuthorizationResponse{
 		User: response.UserAuthorizationBody{
 			Email:    body.User.Email,

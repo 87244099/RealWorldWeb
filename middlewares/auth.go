@@ -3,6 +3,7 @@ package middlewares
 import (
 	"RealWorldWeb/logger"
 	"RealWorldWeb/security"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -10,8 +11,15 @@ import (
 
 func AuthMiddleware(ctx *gin.Context) {
 	log := logger.New(ctx)
-	token := ctx.GetHeader("Authorization")
+
+	token, err2 := ctx.Cookie("token")
+	if errors.Is(err2, http.ErrNoCookie) {
+		token = ctx.GetHeader("Authorization") //get from cookie
+	}
+
+	token = ctx.GetHeader("Authorization")
 	token = strings.TrimPrefix(token, "Bearer ") //这里后面不能少掉空格
+
 	claims, ok, err := security.VerifyJwtHS256(token)
 
 	// 打印调用链信息
