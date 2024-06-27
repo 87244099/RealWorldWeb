@@ -11,6 +11,7 @@ type config struct {
 	PublicKeyLocation  string
 	PrivateKeyLocation string
 	DefaultPortrait    string
+	RedisAddr          string
 }
 
 var _config config
@@ -50,4 +51,8 @@ func GetPrivateKeyLocation() string {
 
 func GetDefaultPortrait() string {
 	return _config.DefaultPortrait
+}
+
+func GetRedisAddr() string {
+	return _config.RedisAddr
 }

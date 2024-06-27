@@ -469,12 +469,17 @@ err = ctx.SaveUploadedFile(file, "./"+file.Filename)
 
 ## redis
 
+### redis
 - install: docker pull redis
-- run: docker run --name realworld_redis -p 3300:3300 -d redis
+- run: docker run --name realworld_redis -p 6379:6379 -d redis
 - docs: https://redis.io/docs/latest/get-started/
-- 
+- usages
 
-
+### go-redis
+- install: go get github.com/redis/go-redis/v9
+- docs: https://github.com/redis/go-redis
+- setup:
+  - 
 
 ## FQA
 

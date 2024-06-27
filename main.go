@@ -1,10 +1,12 @@
 package main
 
 import (
+	"RealWorldWeb/cache"
 	"RealWorldWeb/server"
 )
 
 func main() {
+	cache.InitRedis()
 	//从这里启动http server
 	server.RunHttpServer()
 }

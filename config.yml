@@ -2,3 +2,4 @@ Secret: secret000
 PrivateKeyLocation: D:/software/GoDemo/RealWorldWeb/private.pem
 PublicKeyLocation: D:/software/GoDemo/RealWorldWeb/public.pem
 DefaultPortrait: https://api.realworld.io/images/smiley-cyrus.jpeg
+RedisAddr: localhost:6379
