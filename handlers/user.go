@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"RealWorldWeb/cache"
 	"RealWorldWeb/config"
 	"RealWorldWeb/logger"
 	"RealWorldWeb/middlewares"
@@ -27,8 +28,8 @@ func AddUserHandler(r *gin.Engine) {
 	r.GET("/api/profiles/:username", userProfile)
 
 	userGroup := r.Group("/api/user")
-	userGroup.PUT("", userRegistration)
-	userGroup.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
+	userGroup.Use(middlewares.AuthMiddleware).
+		PUT("", editUser)
 	//r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 }
 
@@ -54,11 +55,27 @@ func userProfile(ctx *gin.Context) {
 	log = log.WithField("username", username) //TODO: what is it?
 	log.Infof("user profile called, username: %s", username)
 
-	user, err := storage.GetUserByUsername(ctx, username)
-	if err != nil {
-		log.Infoln("GetUserByUsername failed:", err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+	var err error
+	var user *models.User
+	user, err = cache.GetUserProfile(ctx, username)
+	if user == nil {
+		user, err = storage.GetUserByUsername(ctx, username)
+		if err != nil {
+			log.WithError(err).Infof("GetUserByUsername DB failed")
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		err = cache.SetUserProfile(ctx, username, user, 300)
+		if err != nil {
+			log.WithError(err).Infof("SetUserProfile cache failed")
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		log.Infof("GetUserByUsername from cache")
+
 	}
+
 	ctx.JSON(http.StatusOK, response.UserProfileResponse{
 		UserProfile: response.UserProfile{
 			Username:  user.Username,
@@ -199,6 +216,7 @@ func editUser(ctx *gin.Context) {
 	}
 
 	if body.EditUserBody.Username == "" || body.EditUserBody.Email == "" {
+		log.WithError(err).Infof("Username or email is empty; username=%s; email=%s", body.EditUserBody.Username, body.EditUserBody.Email)
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -227,8 +245,17 @@ func editUser(ctx *gin.Context) {
 		return
 	}
 
+	err = cache.DeleteUserProfile(ctx, username)
+	if err != nil {
+		log.WithError(err).Infof("DeleteUserProfile failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	token, err := security.GenerateJWTByHS256(body.EditUserBody.Username, dbUser.Email)
 	if err != nil {
+		log.WithError(err).Infof("gen jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
