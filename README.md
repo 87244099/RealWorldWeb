@@ -113,6 +113,7 @@ return false, nil
     - 如果服务没有运行，可以查看对应实例的日志：`docker logs c0690cc9ff66
     - stop serve: `docker stop realworld_mysql`
     - rm instance: `docker rm realworld_mysql`
+    - 导出全部数据：`docker exec realworld_mysql sh -c 'exec mysqldump -uroot -p123456 --all-databases' > ./sqls/realworld_mysql.sql`
 - connect
     - goland右侧有个database照着ip，port等配置下即可
     - 最后点击下[Test Connection]测试能否连通即可
@@ -466,6 +467,15 @@ if err != nil {
 err = ctx.SaveUploadedFile(file, "./"+file.Filename)
 ```
 
+## redis
+
+- install: docker pull redis
+- run: docker run --name realworld_redis -p 3300:3300 -d redis
+- docs: https://redis.io/docs/latest/get-started/
+- 
+
+
+
 ## FQA
 
 ### 数据库
@@ -475,7 +485,7 @@ err = ctx.SaveUploadedFile(file, "./"+file.Filename)
 - Q: 连表查询出现：Error 1267 (HY000): Illegal mix of collations (utf8mb4_0900_ai_ci,IMPLICIT) and (utf8mb4_general_ci,IMPLICIT) for operation '='
   - 先确定你要用什么字符集，基于这个标准去查
   - 问题原因一般是：库，表，列的字符集三者没有保持一致导致的
-  - 导出数据库的初始化sql：mysqldump -u your_username -p your_database_name your_table_name > output_file.sql
+  - 导出数据库的初始化sql`：mysqldump -u your_username -p your_database_name your_table_name > output_file.sql`
     - 如果你是docker里面执行，按如下操作
       - 查看运行的镜像：docker ps
       - 把对应的文件复制出来：docker cp <container_name_or_id>:<container_path> <host_path>

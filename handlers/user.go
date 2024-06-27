@@ -27,8 +27,8 @@ func AddUserHandler(r *gin.Engine) {
 	r.GET("/api/profiles/:username", userProfile)
 
 	userGroup := r.Group("/api/user")
-	userGroup.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 	userGroup.PUT("", userRegistration)
+	userGroup.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 	//r.Use(middlewares.AuthMiddleware).PUT("/api/user", editUser)
 }
 

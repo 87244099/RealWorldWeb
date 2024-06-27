@@ -14,6 +14,7 @@ type ArticleComment struct {
 }
 
 func (a *ArticleComment) FromDB(dbArticleComment *models.ArticleComment) {
+	a.Id = dbArticleComment.Id
 	a.Author = &Author{
 		Bio:       dbArticleComment.AuthorUserBio,
 		Following: false,

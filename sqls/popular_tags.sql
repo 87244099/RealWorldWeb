@@ -1,4 +1,4 @@
-create table popup_tags
+create table popular_tags
 (
     name              varchar(255)    not null
 ) engine = InnoDB
