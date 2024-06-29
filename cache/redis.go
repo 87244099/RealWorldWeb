@@ -6,6 +6,7 @@ import (
 	"RealWorldWeb/models"
 	"context"
 	"encoding/json"
+	"github.com/bsm/redislock"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -13,6 +14,7 @@ import (
 var rdb *redis.Client
 
 func InitRedis() {
+
 	ctx := context.Background()
 	log := logger.New(ctx)
 	log.Infof("redisAddr=%s", config.GetRedisAddr())
@@ -28,6 +30,8 @@ func InitRedis() {
 		log.WithError(err).Infof("redis ping failed")
 		panic(err)
 	}
+
+	Locker = redislock.New(rdb)
 }
 
 const (

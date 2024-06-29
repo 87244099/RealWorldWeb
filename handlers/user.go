@@ -11,8 +11,11 @@ import (
 	"RealWorldWeb/security"
 	"RealWorldWeb/storage"
 	"RealWorldWeb/utils"
+	"context"
+	redislock "github.com/bsm/redislock"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 // go没有类似godoc的工具
@@ -206,7 +209,33 @@ func userLogin(ctx *gin.Context) {
 
 func editUser(ctx *gin.Context) {
 	log := logger.New(ctx)
-	log.Infof("User: %v", utils.JsonMarshal(ctx.MustGet("user")))
+	log.Infof("editUser: %v", utils.JsonMarshal(ctx.MustGet("user")))
+
+	editProfileLockKey := cache.UserEditProfileLockKey(security.GetCurrentUsername(ctx))
+	lock, err2 := cache.Locker.Obtain(ctx, editProfileLockKey, 30*time.Second, redislock.Options{
+		RetryStrategy: redislock.ExponentialBackoff(100*time.Millisecond, 5*time.Second),
+		//Metadata:      "",
+		//Token:         "",
+	})
+	if err2 == redislock.ErrNotObtained {
+		log.WithError(err2).Infof("user is editing; username=" + security.GetCurrentUsername(ctx))
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	} else if err2 != nil {
+		log.WithError(err2).Errorln("obtain lock failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	defer func(lock *redislock.Lock, ctx context.Context) {
+		err := lock.Release(ctx)
+		if err != nil {
+			log.WithError(err).Errorln("lock release failed")
+		}
+	}(lock, ctx)
+
+	time.Sleep(5 * time.Second)
+
 	var body = request.EditUserRequest{}
 	err := ctx.ShouldBind(&body)
 	if err != nil {

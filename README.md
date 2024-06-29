@@ -113,7 +113,8 @@ return false, nil
     - 如果服务没有运行，可以查看对应实例的日志：`docker logs c0690cc9ff66
     - stop serve: `docker stop realworld_mysql`
     - rm instance: `docker rm realworld_mysql`
-    - 导出全部数据：`docker exec realworld_mysql sh -c 'exec mysqldump -uroot -p123456 --all-databases' > ./sqls/realworld_mysql.sql`
+    -
+  导出全部数据：`docker exec realworld_mysql sh -c 'exec mysqldump -uroot -p123456 --all-databases' > ./sqls/realworld_mysql.sql`
 - connect
     - goland右侧有个database照着ip，port等配置下即可
     - 最后点击下[Test Connection]测试能否连通即可
@@ -274,10 +275,13 @@ return "article" //todo what is syntax sugar?
 ```
 
 ### 开启调试模式，查看完整sql
+
 ```go 
 gormDB = gormDB.Debug()
 ```
+
 然后终端段就会出现：
+
 ```shell
 [107.243ms] [rows:1] DELETE FROM `article_comment` WHERE `article_comment`.`id` = 1
 ```
@@ -440,29 +444,37 @@ return
 ```
 
 ## uuid
+
 docs: https://github.com/google/uuid
 install: go get github.com/google/uuid
 
 ## cookie
 
 ### 读取
+
 ```go 
 ctx.Cookie("token")
 ```
+
 ### 写入
+
 ```go
 ctx.SetCookie("token", token, 24*3600, "/", "localhost:8080", false, true)
 ```
 
 ## 文件上传
+
 ### 读取
+
 ```go
 file, err := ctx.FormFile("file")
 if err != nil {
-  log.WithError(err).Infof("get file failed")
+log.WithError(err).Infof("get file failed")
 }
 ```
+
 ### 保存
+
 ```go
 err = ctx.SaveUploadedFile(file, "./"+file.Filename)
 ```
@@ -470,30 +482,81 @@ err = ctx.SaveUploadedFile(file, "./"+file.Filename)
 ## redis
 
 ### redis
+
 - install: docker pull redis
 - run: docker run --name realworld_redis -p 6379:6379 -d redis
 - docs: https://redis.io/docs/latest/get-started/
 - usages
 
 ### go-redis
+
 - install: go get github.com/redis/go-redis/v9
 - docs: https://github.com/redis/go-redis
 - setup:
-  - 
+- init
+
+```go
+func InitRedis() {
+ctx := context.Background()
+log := logger.New(ctx)
+log.Infof("redisAddr=%s", config.GetRedisAddr())
+
+rdb = redis.NewClient(&redis.Options{
+Addr: config.GetRedisAddr(),
+//Password: "", // no password set
+//DB:       0,  // use default DB
+})
+ping := rdb.Ping(context.Background())
+err := ping.Err()
+if err != nil {
+log.WithError(err).Infof("redis ping failed")
+panic(err)
+}
+}
+```
+
+- getter
+
+```go
+rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
+```
+
+- setter
+
+```go
+    err = rdb.Set(ctx, USER_PROFILE_KEY+userName, string(js), time.Duration(ttl)*time.Second).Err()
+```
+
+- delete
+
+```go
+    err := rdb.Del(ctx, USER_PROFILE_KEY+userName).Err()
+
+```
+
+#### 分布式索
+
+- docs: https://github.com/bsm/redislock
+- install: go get github.com/bsm/redislock
+- 应用场景：
+  - 修改、依赖的资源比较多，不能单纯依赖数据库的锁
+  - 定时任务修改数据
 
 ## FQA
 
 ### 数据库
+
 - Q: varchar扩容出现3072的限制
     - 字段改成前缀索引：一般是字段设置了unique导致的
 
-- Q: 连表查询出现：Error 1267 (HY000): Illegal mix of collations (utf8mb4_0900_ai_ci,IMPLICIT) and (utf8mb4_general_ci,IMPLICIT) for operation '='
-  - 先确定你要用什么字符集，基于这个标准去查
-  - 问题原因一般是：库，表，列的字符集三者没有保持一致导致的
-  - 导出数据库的初始化sql`：mysqldump -u your_username -p your_database_name your_table_name > output_file.sql`
-    - 如果你是docker里面执行，按如下操作
-      - 查看运行的镜像：docker ps
-      - 把对应的文件复制出来：docker cp <container_name_or_id>:<container_path> <host_path>
-  - 查看output_file.sql里面，库，表和列的字符集是否存在不一致的情况下，全部改成一样即可
-  - 
+- Q: 连表查询出现：Error 1267 (HY000): Illegal mix of collations (utf8mb4_0900_ai_ci,IMPLICIT) and (
+  utf8mb4_general_ci,IMPLICIT) for operation '='
+    - 先确定你要用什么字符集，基于这个标准去查
+    - 问题原因一般是：库，表，列的字符集三者没有保持一致导致的
+    - 导出数据库的初始化sql`：mysqldump -u your_username -p your_database_name your_table_name > output_file.sql`
+        - 如果你是docker里面执行，按如下操作
+            - 查看运行的镜像：docker ps
+            - 把对应的文件复制出来：docker cp <container_name_or_id>:<container_path> <host_path>
+    - 查看output_file.sql里面，库，表和列的字符集是否存在不一致的情况下，全部改成一样即可
+    -
 - 
