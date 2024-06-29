@@ -539,13 +539,13 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
 - docs: https://github.com/bsm/redislock
 - install: go get github.com/bsm/redislock
 - 应用场景：
-  - 修改、依赖的资源比较多，不能单纯依赖数据库的锁
-  - 定时任务修改数据
+    - 修改、依赖的资源比较多，不能单纯依赖数据库的锁
+    - 定时任务修改数据
 
 ## SSE
 
 - install
-  - web
+    - web
   ```go
       ticker := time.NewTicker(1 * time.Second)
       ctx.Stream(func(w io.Writer) bool {
@@ -557,7 +557,7 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
           return true
       })
   ```
-  - res：浏览器打开localhost，控制台输入如下代码，进行sse的客户端激活注册
+    - res：浏览器打开localhost，控制台输入如下代码，进行sse的客户端激活注册
   ```javascript
   let es = new EventSource("/api/sse")
   es.onmessage = function(event){
@@ -567,6 +567,45 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
   es.close() //主动结束
   ```
 
+## WebSocket
+
+- docs: https://github.com/gorilla/websocket
+- install: go get github.com/gorilla/websocket
+  - usage
+    - web
+    ```go
+        conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+      if err != nil {
+          log.WithError(err).Errorf("Upgrader ws failed")
+          ctx.AbortWithStatus(http.StatusBadRequest)
+          return
+      }
+
+      defer conn.Close()
+
+      for {
+          reqMsg := make(map[string]interface{})
+          err := conn.ReadJSON(&reqMsg)
+          if err != nil {
+              log.WithError(err).Errorf("ReadJSON failed")
+              return
+          }
+          log.Infof("read msg: %v\n", utils.JsonMarshal(reqMsg))
+
+          if reqMsg["exit"] != nil {
+              return
+          }
+
+          err = conn.WriteJSON(reqMsg)
+          if err != nil {
+              log.WithError(err).Errorf("WriteJSON failed")
+              return
+          }
+      }
+      ```
+      - res
+        - npm install -g wscat
+        - wscat -c ws://localhost:8000/api/ws
 
 ## FQA
 
