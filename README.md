@@ -542,6 +542,32 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
   - 修改、依赖的资源比较多，不能单纯依赖数据库的锁
   - 定时任务修改数据
 
+## SSE
+
+- install
+  - web
+  ```go
+      ticker := time.NewTicker(1 * time.Second)
+      ctx.Stream(func(w io.Writer) bool {
+          select {
+          case <-ticker.C:
+              log.Infof("send sse event")
+              ctx.SSEvent("", "heartbeat: "+time.Now().String())
+          }
+          return true
+      })
+  ```
+  - res：浏览器打开localhost，控制台输入如下代码，进行sse的客户端激活注册
+  ```javascript
+  let es = new EventSource("/api/sse")
+  es.onmessage = function(event){
+      console.log(event.data);
+  }
+
+  es.close() //主动结束
+  ```
+
+
 ## FQA
 
 ### 数据库

@@ -212,7 +212,7 @@ func editUser(ctx *gin.Context) {
 	log.Infof("editUser: %v", utils.JsonMarshal(ctx.MustGet("user")))
 
 	editProfileLockKey := cache.UserEditProfileLockKey(security.GetCurrentUsername(ctx))
-	lock, err2 := cache.Locker.Obtain(ctx, editProfileLockKey, 30*time.Second, redislock.Options{
+	lock, err2 := cache.Locker.Obtain(ctx, editProfileLockKey, 30*time.Second, &redislock.Options{
 		RetryStrategy: redislock.ExponentialBackoff(100*time.Millisecond, 5*time.Second),
 		//Metadata:      "",
 		//Token:         "",
