@@ -607,6 +607,41 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
         - npm install -g wscat
         - wscat -c ws://localhost:8000/api/ws
 
+## 容器化
+
+### 前端项目
+
+- 多步容器化
+  - dockerfile
+    ```dockerfile
+    # stage1: build
+    FROM node:18-alpine AS build
+    # 下载node18
+    
+    # 设置当前工作文件夹
+    WORKDIR /app
+    
+    # 把package.json拷贝到app下
+    COPY package.json ./
+    # 安装依赖
+    RUN npm install
+    # 复制啥来的？
+    COPY . .
+    
+    RUN npm run build
+    
+    # stage2: nginx
+    FROM nginx:latest
+    ## copy --from= someStage fromSrc nowSrc
+    COPY --from=build /app/dist /usr/share/nginx/html
+    
+    EXPOSE 80
+    CMD ["nginx", "-g", "daemon off;"]
+    ```
+  - 浏览器输入: http://localhost:5432/
+  - 
+
+
 ## FQA
 
 ### 数据库
