@@ -1,0 +1,71 @@
+networks:
+  # 创建某种网络类型，方便下面直接引用
+  realworld-docker-compose-network:
+    driver: bridge #指定为桥接，在多个instance进行网络共享
+
+services:
+  backend: #服务名称
+    container_name: realworld-docker-compose-backend
+    # 这里相对其他步骤少了个image，就是运行时进行打包来替代image的设置
+    build:
+      context: . #这里对应poth：docker build path
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" # 外网映射端口，指定容器和宿主机的端口映射关系，格式：宿主机的端口:容器里面的端口
+    working_dir: /app #容器里面的工作目录，影响command
+    command: sh -c "sleep 20 && echo delay launch && ./RealWorldWeb"  #延迟一段时间启动 #容器里面的工作目录下要执行的命令
+    environment:
+      - PORT=8080
+    restart: always # 设置服务重启方式
+    depends_on:
+      mysql:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks: #指定服务的网络模式
+      - realworld-docker-compose-network
+  frontend:
+    container_name: realworld-docker-compose-frontend
+    image: vue3-realworld:latest #拉取镜像 这个是你本机拉取的vue3-realworld-example-app制作的镜像，docker hub那边是没有这种镜像的 docker build -t vue3-realworld .
+
+    ports: # 外网映射端口
+      - "80:80"
+    restart: always # 设置重启
+    networks: #设置网络模式
+      - realworld-docker-compose-network
+    depends_on:
+      backend:
+        condition: service_started
+    environment: # 传入环境变量
+      - BASE_URL=/
+      - VITE_API_HOST=https://realworld-docker-compose-backend:8080
+  mysql:
+    container_name: realworld-docker-compose-mysql
+    image: mysql:latest # 拉取镜像
+    environment: # 设置环境
+      MYSQL_ROOT_PASSWORD: 123456 #数据库密码
+      MYSQL_DATABASE: realworld #使用的数据库名称
+    networks: #设置网络方式
+      - realworld-docker-compose-network
+    expose: #服务内网暴露的端口
+      - "3306"
+    volumes:
+      - ./sqls/realworld_mysql.sql:/docker-entrypoint-initdb.d/data.sql #设置要初始化数据的sql
+      #        - mysql-init-scripts:/docker-entrypoint-initdb.d 把整个文件夹的脚本执行一下
+      #        - ./mysql-data:/var/lib/mysql 把mysql的数据绑定到数组机上
+      - realworld-mysql-data:/var/lib/mysql #mysql数据持久化到本机
+
+
+  redis:
+    container_name: realworld-docker-compose-redis
+    image: redis:latest #拉取镜像
+    networks: #设置网络模块
+      - realworld-docker-compose-network
+    expose:
+      - "6379" #内网暴露端口
+
+volumes:
+  #为什么这里为空？
+  realworld-mysql-data:
+
+

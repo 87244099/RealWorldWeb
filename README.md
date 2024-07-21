@@ -659,4 +659,20 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
             - 把对应的文件复制出来：docker cp <container_name_or_id>:<container_path> <host_path>
     - 查看output_file.sql里面，库，表和列的字符集是否存在不一致的情况下，全部改成一样即可
     -
+- Q: request returned Internal Server Error for API route and version http://%2F%2F.%2Fpipe%2Fdocker_engine/_ping, check if the server supports the requested API version
+  - launch docker desktop, pls
+- Q: Error response from daemon: pull access denied for vue3-realworld, repository does not exist or may require 'docker login': denied: requested access to the resource is denied
+  - docker hub确实没有这个镜像，要你自己打包下
+  - 去对象项目基于dockerfile打包下：`docker build -t vue3-realworld .`
+- Q: 在docker compose up启动服务的时候出现：panic: dial tcp 172.23.0.3:3306: connect: connection refused
+  - 目前排查情况：
+    - backend容器可以ping mysql的ip和service：证明网络是正常的
+  - 采取措施：
+    - 将backend的启动延迟若干秒，比如20s：服务恢复正常，说明最然backend依赖其他server started的状态，但是不代表server可以被连接
+  - 常用命令：
+    - docker-compose down 
+    - docker-compose up --build
+- Q: 后端是8080端口，前端老是请求8000端口
+  - 前端是域名指定是针对nginx的，而静态资源只能写死域名，无法通过环境变量运行时注入，所以只能写localhost然后修改为后端服务对应的端口
+
 - 

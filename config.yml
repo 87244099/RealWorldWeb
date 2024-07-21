@@ -1,5 +1,7 @@
 Secret: secret000
-PrivateKeyLocation: D:/software/GoDemo/RealWorldWeb/private.pem
-PublicKeyLocation: D:/software/GoDemo/RealWorldWeb/public.pem
+PrivateKeyLocation: private.pem
+PublicKeyLocation: public.pem
 DefaultPortrait: https://api.realworld.io/images/smiley-cyrus.jpeg
-RedisAddr: localhost:6379
+# 接入docker compose，这里要换成局域网下的服务名称，我估计是内网的时候，你可以通过浏览器访问http:realworld-docker-compose-mysql
+RedisAddr: realworld-docker-compose-redis:6379
+MysqlDSN: root:123456@(realworld-docker-compose-mysql:3306)/realworld?parseTime=true&charset=utf8mb4&collation=utf8mb4_0900_ai_ci
