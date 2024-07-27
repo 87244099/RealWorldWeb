@@ -641,6 +641,45 @@ rdb.Get(ctx, USER_PROFILE_KEY+userName).Result()
   - 浏览器输入: http://localhost:5432/
   - 
 
+### docker集群-docker swarm
+- 什么是swarm
+  - 即docker的集群管理和编排功能
+  - 节点：一个docker实例
+  - 服务：
+    - 创建服务的时候，你可以指定使用哪个镜像，或者对正在运行的容器做操作
+- 如何使用swarm模式
+- docker swarm init <manger-ip> 如果不输入，就以本机ip作为默认的管理员
+然后你可以查看启动后的状态
+```shell
+$ docker node ls
+ID                            HOSTNAME         STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+ngi4l4rskb55rtgm4oj8xh47x *   docker-desktop   Ready     Active         Leader           26.1.1
+
+```
+- 创建一个服务 
+  - docker service create --name helloworld alpine ping docker.com
+- 查看服务实例
+  - docker service ps helloworld
+- 扩容服务
+  - docker service scale helloworld=5
+- 删除服务
+  - docker service rm helloworld
+- 对现有服务进行更新
+  - docker service update --image alpine --args "ping baidu.com" helloworld 
+### 把前端项目放到swarm上
+- 创建镜像仓库: 本质是从docker hub拉一个特定镜像下来，他作为镜像仓库的服务运行
+  - docker pull registry
+  - docker run -d -p 5000:5000 --restart always --name registry registry
+  - 本机访问：http://localhost:5000/v2/
+  - 打包镜像
+    - docker tag vue3-realworld:latest localhost:5000/vue3-realworld:v1.0.0
+  - 发布镜像
+    - docker push localhost:5000/vue3-realworld:v1.0.0
+  - docker service create --env BASE-URL=/ --env VITE_API_HOST=http://realworld-docker-compose-frontend:8080 --publish published=80,target=80 --replicas 3 --name realworld-frontend localhost:5000/vue3-realworld:v1.0.0
+- 
+
+
+- 
 
 ## FQA
 
